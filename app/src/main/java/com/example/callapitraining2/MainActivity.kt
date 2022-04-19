@@ -1,8 +1,12 @@
 package com.example.callapitraining2
 
 import android.os.Bundle
+import android.widget.Adapter
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.callapitraining2.adapter.MyAdapter
 import com.example.callapitraining2.api.ApiInterface
 import com.example.callapitraining2.model.UsersItem
 import retrofit2.Call
@@ -15,14 +19,21 @@ import java.lang.StringBuilder
 const val BASE_URL = "https://gorest.co.in/"
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var tvID : TextView
+    lateinit var myAdapter: MyAdapter
+    lateinit var linearLayout : LinearLayoutManager
+    lateinit var recyclerView : RecyclerView
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        recyclerView = findViewById(R.id.recyclerView)
 
-        tvID = findViewById(R.id.tvID)
+        recyclerView.setHasFixedSize(true)
+        linearLayout = LinearLayoutManager(this)
+        recyclerView.layoutManager = linearLayout
+
+
         getData()
     }
 
@@ -39,15 +50,12 @@ class MainActivity : AppCompatActivity() {
 
         retrofitData.enqueue(object : Callback<List<UsersItem>?>{
             override fun onResponse(call: Call<List<UsersItem>?>, response: Response<List<UsersItem>?>) {
+                var responseBody = response.body()!!
 
-                val responseBody = response.body()!!
+                myAdapter = MyAdapter(baseContext, responseBody)
 
-                val stringBundle = StringBuilder()
-                for (myData in responseBody){
-                    stringBundle.append(myData.email)
-                    stringBundle.append("\n")
-                }
-                tvID.text = stringBundle
+                recyclerView.adapter = myAdapter
+
             }
 
             override fun onFailure(call: Call<List<UsersItem>?>, t: Throwable) {
